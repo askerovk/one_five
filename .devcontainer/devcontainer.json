@@ -1,0 +1,22 @@
+{
+    "build": {
+        "dockerfile": "./Dockerfile",
+        "context": "."
+    },
+    "containerEnv":{
+        "TEXT_TITLE": "0a5ded3808d21fd689a2f09736a1d07492033788.json"
+    },
+    "shutdownAction": "stopContainer",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/usr/local/one_five_project,type=bind",
+    "workspaceFolder": "/usr/local/one_five_project",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-toolsai.jupyter",
+                "ms-python.python",
+                "ms-python.flake8",
+                "ms-azuretools.vscode-docker"
+            ]
+        }
+    }
+}
