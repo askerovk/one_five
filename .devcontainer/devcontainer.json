@@ -18,5 +18,8 @@
                 "ms-azuretools.vscode-docker"
             ]
         }
-    }
+    },
+    "runArgs": [
+    "--network=one_five_project_default"
+    ]
 }

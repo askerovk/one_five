@@ -10,13 +10,18 @@ ENV CONDA_DIR=/opt/conda
 
 RUN apt install wget -y
 
-RUN wget -O /usr/local/miniconda.sh https://repo.anaconda.com/miniconda/Miniconda3-py312_25.1.1-2-Linux-x86_64.sh 
+RUN wget -O /usr/local/miniconda.sh \
+    https://repo.anaconda.com/miniconda/Miniconda3-py312_25.1.1-2-Linux-x86_64.sh 
 
 RUN bash /usr/local/miniconda.sh -b -p /opt/conda
 
 ENV PATH="$PATH:/opt/conda/bin"
 
-RUN conda create --name one_five -y python=3.12 pandas sqlalchemy psycopg2 nltk
+RUN conda config --add channels conda-forge && \
+    conda config --set channel_priority strict
+
+RUN conda create --name one_five -y python=3.12 pandas sqlalchemy \
+    nltk clickhouse-connect
 
 # RUN pip install --upgrade pip
 

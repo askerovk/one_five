@@ -1,3 +1,5 @@
 credentials/
 data/
 legacy
+.env
+presto_catalog
