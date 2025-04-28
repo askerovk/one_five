@@ -3,3 +3,6 @@ data/
 legacy
 .env
 presto_catalog
+airflow/logs
+airflow/dags/__pycache__
+data_processing/src/__pycache__

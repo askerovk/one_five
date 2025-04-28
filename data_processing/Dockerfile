@@ -4,6 +4,8 @@ RUN apt update && apt install -y libgl1-mesa-glx libegl1-mesa \
     libxrandr2 libxrandr2 libxss1 libxcursor1 libxcomposite1 libasound2 \
     libxi6 libxtst6 -y
 
+RUN mkdir /usr/local/one_five_project
+
 WORKDIR /usr/local/one_five_project
 
 ENV CONDA_DIR=/opt/conda
@@ -20,21 +22,13 @@ ENV PATH="$PATH:/opt/conda/bin"
 RUN conda config --add channels conda-forge && \
     conda config --set channel_priority strict
 
+COPY . .
+
 RUN conda create --name one_five -y python=3.12 pandas sqlalchemy \
     nltk clickhouse-connect
 
-# RUN pip install --upgrade pip
+SHELL ["conda", "run", "-n", "one_five", "/bin/bash", "-c"]
 
-# ENV PYTHONUNBUFFERED 1
+RUN python -c "import nltk; nltk.download(['punkt_tab', 'stopwords'])"
 
-# WORKDIR /usr/local
-
-# COPY requirements.txt ./requirements.txt
-# RUN pip install -r requirements.txt
-
-# COPY data ./data
-# COPY src ./src
-
-# COPY docker ./docker
-# RUN chmod +x ./docker/entrypoint.sh
-# ENTRYPOINT ["./docker/entrypoint.sh"]
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "one_five", "python", "src/app.py"]

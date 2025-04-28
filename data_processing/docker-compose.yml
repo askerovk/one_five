@@ -1,0 +1,6 @@
+services:
+  data_processing:
+    build: .
+    image: data_processing
+    entrypoint: echo "data processing image built"
+    container_name: data_processing

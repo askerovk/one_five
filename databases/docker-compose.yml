@@ -1,0 +1,62 @@
+services:
+  # etl:
+  #   platform: linux/amd64
+  #   image: word_count:dev
+  #   build:
+  #     dockerfile: Dockerfile
+  #     context: .
+  #   env_file:
+  #     - dev.env
+  #   volumes:
+  #     - ./data:/usr/local/data
+  
+  presto:
+    image: prestodb/presto:0.292
+    container_name: presto
+    ports:
+      - 8081:8081
+    volumes:
+      - ./presto_db_config/config.properties:/opt/presto-server/etc/config.properties
+      - ./presto_db_config/jvm.config:/opt/presto-server/etc/jvm.config
+      - ./presto_catalog/:/opt/presto-server/etc/catalog/
+    depends_on:
+      clickhouse:
+        condition: service_started
+        restart: true
+      
+  clickhouse:
+    image: clickhouse:25.4.1
+    container_name: clickhouse
+    ports:
+      - 8123:8123
+      - 9000:9000
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+    volumes:
+      - clickhouse_main:/var/lib/clickhouse/
+      - clickhouse_server:/var/log/clickhouse-server/
+      - ./clickhouse_init/:/docker-entrypoint-initdb.d/
+    env_file:
+      - ./.env
+    secrets:
+    - clickhouse_password
+volumes:
+  clickhouse_main:
+  clickhouse_server:
+
+secrets:
+  clickhouse_password:
+    file: ./credentials/clickhouse_password.txt
+
+
+
+# secrets:
+#   # postgresql_creds:
+#   #   # file: ./credentials/postgresql_creds.txt
+#   mariadb_creds:
+#     file: ./credentials/mariadb_creds.txt
+# path to catalogues in presto - /opt/presto-server/etc/catalog
+
+
