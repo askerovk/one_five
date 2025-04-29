@@ -1,3 +1,4 @@
+"""Function which upload dataframe data to clickhouse."""
 import uuid
 import re
 
@@ -11,7 +12,7 @@ def upload_dim_sources(client, dim_sources):
         None
     """
     # Create a temporary table
-    table_name = re.sub("-", "", str(uuid.uuid4()))
+    table_name = 'temp.' + re.sub("-", "", str(uuid.uuid4()))
 
     query_1 = f"""CREATE TABLE IF NOT EXISTS {table_name} (
         source_id varchar(50) ,
@@ -54,7 +55,7 @@ def upload_dim_words(client, dim_sources):
         None
     """
     # Create a temporary table
-    table_name = re.sub("-", "", str(uuid.uuid4()))
+    table_name = 'temp.' + re.sub("-", "", str(uuid.uuid4()))
 
     query_1 = f"""CREATE TABLE IF NOT EXISTS {table_name} (
         word_id varchar(50),
@@ -97,7 +98,7 @@ def upload_fact_words_counts(client, fact_word_counts):
         None
     """
     # Create a temporary table
-    table_name = re.sub("-", "", str(uuid.uuid4()))
+    table_name = 'temp.' + re.sub("-", "", str(uuid.uuid4()))
 
     query_1 = f"""CREATE TABLE IF NOT EXISTS {table_name} (
     count_id varchar(50),
@@ -116,7 +117,7 @@ def upload_fact_words_counts(client, fact_word_counts):
     client.insert_df(table=table_name, df=fact_word_counts)
 
     # Replace words with word ids, source names with source ids
-    # and, upload word couts to fact_word_counts
+    # and, upload word counts to fact_word_counts
     query_2 = f"""
         INSERT INTO warehouse.fact_word_counts
         SELECT

@@ -1,3 +1,4 @@
+"""Main app for running the json parsing ETL."""
 import os
 from ast import literal_eval
 import logging
@@ -25,9 +26,12 @@ root_logger.setLevel(logging.INFO)
 
 
 def app():
+    """Main, top level function for ETL."""
     root_logger.info("Connecting to clickhouse db.")
     client = clickhouse_connect.get_client(
-        host="clickhouse", username="admin", password=os.environ["CLICKHOUSE_PASSWORD"]
+        host="clickhouse",
+        username=os.environ["CLICKHOUSE_USER"],
+        password=os.environ["CLICKHOUSE_PASSWORD"]
     )
 
     root_logger.info("Fetching json paths from env vars.")

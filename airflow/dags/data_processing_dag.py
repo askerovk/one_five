@@ -1,16 +1,17 @@
-import json
+"""ETL dag for parsing json files and populating clickhouse DB."""
 import glob
+import os
 import pendulum
 
+from docker.types import Mount
+import clickhouse_connect
 from airflow.decorators import dag, task
 from airflow.providers.docker.operators.docker import DockerOperator
-import clickhouse_connect
-from docker.types import Mount
 
 
 
-import os
 os.chdir('/opt/airflow/dags')
+
 
 @dag(
     schedule=None,
@@ -19,27 +20,24 @@ os.chdir('/opt/airflow/dags')
     tags=["example"],
 )
 def data_processing():
-    """
-    ### TaskFlow API Tutorial Documentation
-    This is a simple data pipeline example which demonstrates the use of
-    the TaskFlow API using three simple tasks for Extract, Transform, and Load.
-    Documentation that goes along with the Airflow TaskFlow API tutorial is
-    located
-    [here](https://airflow.apache.org/docs/apache-airflow/stable/tutorial_taskflow_api.html)
-    """
+    """Main ETL dag."""
     @task()
-    def generate_json_lists():
+    def get_pending_json_paths():
         json_paths = glob.glob('/opt/airflow/data/texts/*.json')
 
         client = clickhouse_connect.get_client(
             host='clickhouse',
-            username='admin',
+            username=os.environ['CLICKHOUSE_USER'],
             password=os.environ['CLICKHOUSE_PASSWORD'])
 
-        processed_paths = client.query_np("SELECT source_path FROM warehouse.dim_sources;")
+        processed_paths = client.query_np(
+            "SELECT source_path FROM warehouse.dim_sources;"
+            )
+
+        processed_paths = [x[0] for x in processed_paths]
 
         new_paths = list(
-            set(json_paths) - set(list(processed_paths))
+            set(json_paths) - set(processed_paths)
         )
 
         list_range = range(0, len(new_paths), 100)
@@ -51,26 +49,27 @@ def data_processing():
         for path_list in json_paths:
 
             result.append({
+                'CLICKHOUSE_USER': os.environ['CLICKHOUSE_USER'],
                 'CLICKHOUSE_PASSWORD': os.environ['CLICKHOUSE_PASSWORD'],
                 'JSON_PATHS': path_list
             })
 
         return result
 
-    env_override_list = generate_json_lists()
+    env_override_list = get_pending_json_paths()
 
     DockerOperator.partial(
-        task_id='process_texts',
+        task_id='parse_pending_jsons',
         image='data_processing',
-        mounts=[
-            Mount(source="/home/kamran/Documents/one_five_project/data_processing/data/", target="/opt/airflow/data/", type="bind")
+        mounts=[Mount(
+            source=os.environ['PROJECT_DIR_PATH'] + '/data_processing/data/',
+            target="/opt/airflow/data/", type="bind")
         ],
         docker_url="unix://var/run/docker.sock",
         network_mode='one_five_project',
         auto_remove='success',
         mount_tmp_dir=False,
-        max_active_tis_per_dag=3
-
+        max_active_tis_per_dag=5
     ).expand(environment=env_override_list)
 
 

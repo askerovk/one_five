@@ -1,3 +1,4 @@
+"""Functions which create matching dataframe for clickhouse tables."""
 import uuid
 from datetime import datetime
 

@@ -70,4 +70,39 @@ SELECT source_path, source_title, count(word_english) AS unique_word_count FROM 
 	FROM datamart.individual_word_counts
 	WHERE NOT is_stopword 
 )
- GROUP BY(source_path, source_title);
+GROUP BY(source_path, source_title);
+
+CREATE DATABASE analytics_sandbox;
+
+CREATE DATABASE temp;
+
+CREATE USER airflow IDENTIFIED BY 'password2';
+
+CREATE USER analyst IDENTIFIED  BY 'password3';
+
+CREATE ROLE write_production;
+
+GRANT SELECT ON datamart.* TO write_production;
+
+GRANT SELECT, INSERT ON warehouse.* TO write_production;
+
+GRANT SELECT, INSERT, CREATE, DROP ON temp.* TO write_production;
+
+CREATE ROLE read_only;
+
+GRANT SELECT ON warehouse.* TO read_only;
+
+GRANT SELECT ON datamart.* TO read_only;
+
+CREATE ROLE sandbox_full_access;
+
+GRANT ALL ON analytics_sandbox.* TO sandbox_full_access;
+
+GRANT write_production TO airflow;
+
+GRANT read_only TO analyst;
+
+GRANT sandbox_full_access TO analyst;
+
+
+

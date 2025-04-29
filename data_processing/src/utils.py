@@ -1,3 +1,4 @@
+"""Utility functions for reading and tokenizing texts."""
 import json
 import uuid
 import re
